@@ -12,7 +12,10 @@ For while, only for manager blobs and containers (create, destroy and so on).
 #### Creating a container
 
 ```go
-import "github.com/loldesign/azure"
+import(
+  "fmt"
+  "github.com/loldesign/azure"
+)
 
 blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
 res := blob.CreateContainer("mycontainer")
