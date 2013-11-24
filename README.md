@@ -7,9 +7,9 @@ For while, only for manager blobs and containers (create, destroy and so on).
 
 ```go get github.com/loldesign/azure```
 
-### Usage
+## Usage
 
-#### Creating a container
+### Creating a container
 
 ```go
 import(
