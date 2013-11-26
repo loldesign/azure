@@ -20,23 +20,30 @@ type CoreSuite struct{
 
 func (s *CoreSuite) SetUpSuite (c *C) {
   time := time.Date(2013, time.November, 22, 15, 0, 0, 0, time.UTC)
-  s.core = New("sampleAccount", "secretKey", "PUT", "samplecontainer", "restype=container", time)
+  s.core = New("sampleAccount", "secretKey", "put", "samplecontainer", "?restype=container", time)
 }
 
 func (s *CoreSuite) Test_RequestUrl(c *C) {
-  expected := "http://sampleAccount.blob.core.windows.net/samplecontainer?restype=container"
+  expected := "https://sampleAccount.blob.core.windows.net/samplecontainer?restype=container"
 
   c.Assert(s.core.RequestUrl(), Equals, expected)
 }
 
 func (s *CoreSuite) Test_Request(c *C) {
   handle := func(w http.ResponseWriter, r *http.Request) {
+    c.Assert(r.URL.Scheme, Equals, "https")
+    c.Assert(r.URL.Host, Equals, "sampleAccount.blob.core.windows.net")
+    c.Assert(r.URL.Path, Equals, "/samplecontainer")
+
+    //METHOD
+    c.Assert(r.Method, Equals, "PUT")
+    // HEADER
     c.Assert(r.Header.Get("x-ms-date"), Equals, "Fri, 22 Nov 2013 15:00:00 GMT")
     c.Assert(r.Header.Get("x-ms-version"), Equals, "2009-09-19")
     c.Assert(r.Header.Get("Authorization"), Equals, "SharedKey sampleAccount:5Mb0CpXTPSuX69+4njLQJB9Bf7aoBrsFhamFb7ZHRWs=")
   }
 
-  req := s.core.Request()
+  req := s.core.PrepareRequest()
   w := httptest.NewRecorder()
 
   handle(w, req)
