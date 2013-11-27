@@ -3,8 +3,9 @@ package blob
 import (
   "github.com/loldesign/azure/core"
   "net/http"
+  "fmt"
   "time"
-  "log"
+  "io"
 )
 
 type Azure struct {
@@ -12,40 +13,53 @@ type Azure struct {
   AccessKey string
 }
 
-func (azure Azure) prepareRequest(method, container, resource string) *http.Request {
-  core := core.Core{
-      AccessKey: azure.AccessKey,
-      Account: azure.Account,
-      Method: method,
-      RequestTime: time.Now().UTC(),
-      Container: container,
-      Resource: resource}
-
-  return core.PrepareRequest()
+func (azure Azure) doRequest(azureRequest core.AzureRequest) (*http.Response, error) {
+  client, req := azure.clientAndRequest(azureRequest)
+  return client.Do(req)
 }
 
-func (azure Azure) CreateContainer(container string) *http.Response {
+func (azure Azure) clientAndRequest(azureRequest core.AzureRequest) (*http.Client, *http.Request) {
   client := &http.Client{}
-  req := azure.prepareRequest("put", container, "?restype=container")
+  req := azure.prepareRequest(azureRequest)
 
-  res, err := client.Do(req)
-
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  return res
+  return client, req
 }
 
-func (azure Azure) DeleteContainer(container string) *http.Response {
-  client := &http.Client{}
-  req := azure.prepareRequest("delete", container, "?restype=container")
+func (azure Azure) prepareRequest(azureRequest core.AzureRequest) *http.Request {
+  credentials := core.Credentials{
+    Account: azure.Account,
+    AccessKey: azure.AccessKey}
 
-  res, err := client.Do(req)
+  return core.New(credentials, azureRequest).PrepareRequest()
+}
 
-  if err != nil {
-    log.Fatal(err)
-  }
+func (azure Azure) CreateContainer(container string) (*http.Response, error) {
+  azureRequest := core.AzureRequest{
+    Method: "put",
+    Container: container,
+    Resource: "?restype=container",
+    RequestTime: time.Now().UTC()}
 
-  return res
+  return azure.doRequest(azureRequest)
+}
+
+func (azure Azure) DeleteContainer(container string) (*http.Response, error) {
+  azureRequest := core.AzureRequest{
+    Method: "delete",
+    Container: container,
+    Resource: "?restype=container",
+    RequestTime: time.Now().UTC()}
+
+  return azure.doRequest(azureRequest)
+}
+
+func (azure Azure) FileUpload(container, name string, body io.Reader) (*http.Response, error) {
+  azureRequest := core.AzureRequest{
+    Method: "put",
+    Container: fmt.Sprintf("%s/%s", container, name),
+    Body: body,
+    Header: map[string]string{"x-ms-blob-type": "BlockBlob", "Accept-Charset": "UTF-8"},
+    RequestTime: time.Now().UTC()}
+
+  return azure.doRequest(azureRequest)
 }
