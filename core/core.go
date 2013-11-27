@@ -117,6 +117,30 @@ func (core Core) canonicalizedHeaders() string {
   return strings.Join(splitted, "\n")
 }
 
+/*
+Based on Azure docs
+  Link: http://msdn.microsoft.com/en-us/library/windowsazure/dd179428.aspx#Constructing_Element
+
+1) Beginning with an empty string (""), append a forward slash (/), followed by the name of the account that owns the resource being accessed.
+2) Append the resource's encoded URI path, without any query parameters.
+3) Retrieve all query parameters on the resource URI, including the comp parameter if it exists.
+4) Convert all parameter names to lowercase.
+5) Sort the query parameters lexicographically by parameter name, in ascending order.
+6) URL-decode each query parameter name and value.
+7) Append each query parameter name and value to the string in the following format, making sure to include the colon (:) between the name and the value:
+    parameter-name:parameter-value
+
+8) If a query parameter has more than one value, sort all values lexicographically, then include them in a comma-separated list:
+    parameter-name:parameter-value-1,parameter-value-2,parameter-value-n
+
+9) Append a new line character (\n) after each name-value pair.
+
+Rules:
+  1) Avoid using the new line character (\n) in values for query parameters. If it must be used, ensure that it does not affect the format of the canonicalized resource string.
+  2) Avoid using commas in query parameter values.
+*/
+
+
 func (core Core) canonicalizedResource() string {
   var buffer bytes.Buffer
 
