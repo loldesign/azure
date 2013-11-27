@@ -1,6 +1,7 @@
 package core
 
 import(
+  "fmt"
   "testing"
   "time"
   "net/http"
@@ -20,7 +21,17 @@ type CoreSuite struct{
 
 func (s *CoreSuite) SetUpSuite (c *C) {
   time := time.Date(2013, time.November, 22, 15, 0, 0, 0, time.UTC)
-  s.core = New("sampleAccount", "secretKey", "put", "samplecontainer", "?restype=container", time)
+  credentials := Credentials{
+    Account: "sampleAccount",
+    AccessKey: "secretKey"}
+
+  azureRequest := AzureRequest{
+    Method: "put",
+    Container: "samplecontainer",
+    Resource: "?restype=container",
+    RequestTime: time}
+
+  s.core = New(credentials, azureRequest)
 }
 
 func (s *CoreSuite) Test_RequestUrl(c *C) {
@@ -47,4 +58,43 @@ func (s *CoreSuite) Test_Request(c *C) {
   w := httptest.NewRecorder()
 
   handle(w, req)
+}
+
+func (s *CoreSuite) Test_RequestWithCustomHeaders(c *C) {
+  handle := func(w http.ResponseWriter, r *http.Request) {
+    // HEADER
+    c.Assert(r.Header.Get("some"), Equals, "header key")
+    c.Assert(r.Header.Get("x-ms-blob-type"), Equals, "BlockBlob")
+    c.Assert(r.Header.Get("x-ms-date"), Equals, "Fri, 22 Nov 2013 15:00:00 GMT")
+    c.Assert(r.Header.Get("x-ms-version"), Equals, "2009-09-19")
+    c.Assert(r.Header.Get("Authorization"), Equals, "SharedKey sampleAccount:KcrJEvtAQwa0NJbObaCqBIgXOEcXAMmxcAuMr4+C+E4=")
+  }
+
+  s.core.AzureRequest.Header = map[string]string{
+    "x-ms-blob-type":"BlockBlob",
+    "some": "header key"}
+
+  req := s.core.PrepareRequest()
+  w := httptest.NewRecorder()
+
+  handle(w, req)
+}
+
+func (s *CoreSuite) Test_CanonicalizedHeaders(c *C) {
+  req, err := http.NewRequest("GET", "http://example.com", nil)
+
+  if err != nil {
+    c.Error(err)
+  }
+
+  req.Header.Add("nothing", "important")
+  req.Header.Add("X-Ms-Version", "2009-09-19")
+  req.Header.Add("X-Ms-Date", "Fri, 22 Nov 2013 15:00:00 GMT")
+  req.Header.Add("X-Ms-Blob-Type", "BlockBlob")
+  req.Header.Add("Content-Type", "text/plain; charset=UTF-8")
+
+  s.core.AzureRequest.Request = req
+
+  expected := fmt.Sprintf("x-ms-blob-type:%s\nx-ms-date:%s\nx-ms-version:%s", "BlockBlob", "Fri, 22 Nov 2013 15:00:00 GMT", "2009-09-19")
+  c.Assert(s.core.canonicalizedHeaders(), Equals, expected)
 }
