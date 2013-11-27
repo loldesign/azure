@@ -52,7 +52,13 @@ func (core Core) addCustomInformationsToHeader() {
 }
 
 func (core Core) PrepareRequest() *http.Request {
-  req, err := http.NewRequest(strings.ToUpper(core.AzureRequest.Method), core.RequestUrl(), core.AzureRequest.Body)
+  body := &bytes.Buffer{}
+
+  if core.AzureRequest.Body != nil {
+    io.Copy(body, core.AzureRequest.Body)
+  }
+
+  req, err := http.NewRequest(strings.ToUpper(core.AzureRequest.Method), core.RequestUrl(), body)
 
   if err != nil {
     log.Fatal(err)
