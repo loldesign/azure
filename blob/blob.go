@@ -8,6 +8,8 @@ import (
   "io"
 )
 
+var client = &http.Client{}
+
 type Azure struct {
   Account string
   AccessKey string
@@ -19,7 +21,6 @@ func (azure Azure) doRequest(azureRequest core.AzureRequest) (*http.Response, er
 }
 
 func (azure Azure) clientAndRequest(azureRequest core.AzureRequest) (*http.Client, *http.Request) {
-  client := &http.Client{}
   req := azure.prepareRequest(azureRequest)
 
   return client, req
