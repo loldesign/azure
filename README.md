@@ -17,10 +17,63 @@ import(
   "github.com/loldesign/azure"
 )
 
-blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
-res := blob.CreateContainer("mycontainer")
+func main() {
+  blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
+  res, err := blob.CreateContainer("mycontainer")
 
-fmt.Printf("status -> %s", res.Status)
+    if err != nil {
+      fmt.Println(err)
+    }
+
+  fmt.Printf("status -> %s", res.Status)
+}
+```
+
+### Uploading a file to container
+
+```go
+import(
+  "fmt"
+  "github.com/loldesign/azure"
+)
+
+func main() {
+  blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
+
+  file, err := os.Open("path/of/myfile.txt")
+
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  res, err := blob.FileUpload("mycontainer", "file_name.txt", file)
+
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  fmt.Printf("status -> %s", res.Status)
+}
+```
+
+### Deleting a container
+
+```go
+import(
+  "fmt"
+  "github.com/loldesign/azure"
+)
+
+func main() {
+  blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
+  res, err := blob.DeleteContainer("mycontainer")
+
+    if err != nil {
+      fmt.Println(err)
+    }
+
+  fmt.Printf("status -> %s", res.Status)
+}
 ```
 
 ## Contributing
