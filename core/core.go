@@ -139,8 +139,6 @@ Rules:
   1) Avoid using the new line character (\n) in values for query parameters. If it must be used, ensure that it does not affect the format of the canonicalized resource string.
   2) Avoid using commas in query parameter values.
 */
-
-
 func (core Core) canonicalizedResource() string {
   var buffer bytes.Buffer
 
@@ -189,9 +187,10 @@ params:
  Range
 */
 func (core Core) signature() string {
-  signature := fmt.Sprintf("%s\n\n\n%s\n\n\n\n\n\n\n\n\n%s\n%s",
+  signature := fmt.Sprintf("%s\n\n\n%s\n\n%s\n\n\n\n\n\n\n%s\n%s",
     strings.ToUpper(core.AzureRequest.Method),
     core.contentLength(),
+    core.AzureRequest.Request.Header.Get("Content-Type"),
     core.canonicalizedHeaders(),
     core.canonicalizedResource())
 

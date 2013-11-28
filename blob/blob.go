@@ -5,7 +5,10 @@ import (
   "net/http"
   "fmt"
   "time"
-  "io"
+  "os"
+  "mime"
+  "strings"
+  "path"
 )
 
 var client = &http.Client{}
@@ -54,12 +57,15 @@ func (azure Azure) DeleteContainer(container string) (*http.Response, error) {
   return azure.doRequest(azureRequest)
 }
 
-func (azure Azure) FileUpload(container, name string, body io.Reader) (*http.Response, error) {
+func (azure Azure) FileUpload(container, name string, file *os.File) (*http.Response, error) {
+  extension := strings.ToLower(path.Ext(file.Name()))
+  contentType := mime.TypeByExtension(extension)
+
   azureRequest := core.AzureRequest{
     Method: "put",
     Container: fmt.Sprintf("%s/%s", container, name),
-    Body: body,
-    Header: map[string]string{"x-ms-blob-type": "BlockBlob", "Accept-Charset": "UTF-8"},
+    Body: file,
+    Header: map[string]string{"x-ms-blob-type": "BlockBlob", "Accept-Charset": "UTF-8", "Content-Type": contentType},
     RequestTime: time.Now().UTC()}
 
   return azure.doRequest(azureRequest)
