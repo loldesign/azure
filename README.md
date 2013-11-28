@@ -20,7 +20,7 @@ import(
 )
 
 func main() {
-  blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
+  blob := azure.New("accountName", "secret")
   res, err := blob.CreateContainer("mycontainer")
 
     if err != nil {
@@ -42,7 +42,7 @@ import(
 )
 
 func main() {
-  blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
+  blob := azure.New("accountName", "secret")
 
   file, err := os.Open("path/of/myfile.txt")
 
@@ -71,7 +71,7 @@ import(
 )
 
 func main() {
-  blob := blob.Azure{Account: "accountName", AccessKey: "secret"}
+  blob := azure.New("accountName", "secret")
   res, err := blob.DeleteContainer("mycontainer")
 
     if err != nil {
