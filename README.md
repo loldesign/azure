@@ -12,6 +12,8 @@ For while, only for manager blobs and containers (create, destroy and so on).
 ### Creating a container
 
 ```go
+package main
+
 import(
   "fmt"
   "github.com/loldesign/azure"
@@ -32,6 +34,8 @@ func main() {
 ### Uploading a file to container
 
 ```go
+package main
+
 import(
   "fmt"
   "github.com/loldesign/azure"
@@ -59,6 +63,8 @@ func main() {
 ### Deleting a container
 
 ```go
+package main
+
 import(
   "fmt"
   "github.com/loldesign/azure"
