@@ -15,28 +15,28 @@ func Test(t *testing.T) {
 
 var _ = Suite(&CoreSuite{})
 
+// Global
+var requestTime = time.Date(2013, time.November, 02, 15, 0, 0, 0, time.UTC)
+var credentials = Credentials{
+  Account: "sampleAccount",
+  AccessKey: "secretKey"}
+
+var azureRequest = AzureRequest{
+  Method: "put",
+  Container: "samplecontainer",
+  Resource: "?restype=container",
+  RequestTime: requestTime}
+
 type CoreSuite struct{
   core *Core
 }
 
 func (s *CoreSuite) SetUpSuite (c *C) {
-  time := time.Date(2013, time.November, 22, 15, 0, 0, 0, time.UTC)
-  credentials := Credentials{
-    Account: "sampleAccount",
-    AccessKey: "secretKey"}
-
-  azureRequest := AzureRequest{
-    Method: "put",
-    Container: "samplecontainer",
-    Resource: "?restype=container",
-    RequestTime: time}
-
   s.core = New(credentials, azureRequest)
 }
 
 func (s *CoreSuite) Test_RequestUrl(c *C) {
   expected := "https://sampleAccount.blob.core.windows.net/samplecontainer?restype=container"
-
   c.Assert(s.core.RequestUrl(), Equals, expected)
 }
 
@@ -97,4 +97,20 @@ func (s *CoreSuite) Test_CanonicalizedHeaders(c *C) {
 
   expected := fmt.Sprintf("x-ms-blob-type:%s\nx-ms-date:%s\nx-ms-version:%s", "BlockBlob", "Fri, 22 Nov 2013 15:00:00 GMT", "2009-09-19")
   c.Assert(s.core.canonicalizedHeaders(), Equals, expected)
+}
+
+func (s *CoreSuite) Test_CanonicalizedResource(c *C) {
+  expected := "/sampleAccount/samplecontainer\nrestype:container"
+  c.Assert(s.core.canonicalizedResource(), Equals, expected)
+}
+
+func (s *CoreSuite) Test_CanonicalizedResourceWithCustomParams(c *C) {
+  a := AzureRequest{
+  Container: "samplecontainer",
+  Resource: "?restype=container&comp=list"}
+
+  customCore := New(credentials, a)
+
+  expected := "/sampleAccount/samplecontainer\ncomp:list\nrestype:container"
+  c.Assert(customCore.canonicalizedResource(), Equals, expected)
 }

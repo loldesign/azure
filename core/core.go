@@ -156,7 +156,10 @@ func (core Core) canonicalizedResource() string {
     buffer.WriteString(fmt.Sprintf("\n%s:%s", key, strings.Join(values, ",")))
   }
 
-  return buffer.String()
+  splitted := strings.Split(buffer.String(), "\n")
+  sort.Strings(splitted)
+
+  return strings.Join(splitted, "\n")
 }
 
 func (core Core) contentLength() (contentLength string) {
