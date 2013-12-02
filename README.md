@@ -82,6 +82,30 @@ func main() {
 }
 ```
 
+### Listing container's blobs
+
+```go
+package main
+
+import(
+  "fmt"
+  "github.com/loldesign/azure"
+)
+
+func main() {
+  blob := azure.New("accountName", "secret")
+  blobs, err := blob.ListBlobs("mycontainer")
+
+    if err != nil {
+      fmt.Println(err)
+    }
+
+  for _, file := range blobs.Itens {
+    fmt.Printf("blob -> %+v", file)
+  }
+}
+```
+
 ## Contributing
 
 1. Fork it
