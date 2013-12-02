@@ -9,6 +9,7 @@ import (
   "mime"
   "strings"
   "path"
+  "encoding/xml"
 )
 
 var client = &http.Client{}
@@ -16,6 +17,25 @@ var client = &http.Client{}
 type azure struct {
   account string
   key string
+}
+
+type Blobs struct {
+  XMLName xml.Name `xml:"EnumerationResults"`
+  Itens []Blob `xml:"Blobs>Blob"`
+}
+
+type Blob struct {
+  Name string `xml:"Name"`
+  Properties []Property `xml:"Properties"`
+}
+
+type Property struct {
+  LastModified string `xml:"Last-Modified"`
+  Etag string `xml:"Etag"`
+  ContentLength string `xml:"Content-Length"`
+  ContentType string `xml:"Content-Type"`
+  BlobType string `xml:"BlobType"`
+  LeaseStatus string `xml:"LeaseStatus"`
 }
 
 func (a azure) doRequest(azureRequest core.AzureRequest) (*http.Response, error) {
@@ -85,4 +105,25 @@ func (a azure) FileUpload(container, name string, file *os.File) (*http.Response
     RequestTime: time.Now().UTC()}
 
   return a.doRequest(azureRequest)
+}
+
+func (a azure) ListBlobs(container string) (Blobs, error) {
+  var blobs Blobs
+
+  azureRequest := core.AzureRequest{
+    Method: "get",
+    Container: container,
+    Resource: "?restype=container&comp=list",
+    RequestTime: time.Now().UTC()}
+
+  res, err := a.doRequest(azureRequest)
+
+  if err != nil {
+    return blobs, err
+  }
+
+  decoder := xml.NewDecoder(res.Body)
+  decoder.Decode(&blobs)
+
+  return blobs, nil
 }
