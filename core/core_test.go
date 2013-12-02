@@ -49,9 +49,9 @@ func (s *CoreSuite) Test_Request(c *C) {
     //METHOD
     c.Assert(r.Method, Equals, "PUT")
     // HEADER
-    c.Assert(r.Header.Get("x-ms-date"), Equals, "Fri, 22 Nov 2013 15:00:00 GMT")
+    c.Assert(r.Header.Get("x-ms-date"), Equals, "Sat, 02 Nov 2013 15:00:00 GMT")
     c.Assert(r.Header.Get("x-ms-version"), Equals, "2009-09-19")
-    c.Assert(r.Header.Get("Authorization"), Equals, "SharedKey sampleAccount:5Mb0CpXTPSuX69+4njLQJB9Bf7aoBrsFhamFb7ZHRWs=")
+    c.Assert(r.Header.Get("Authorization"), Equals, "SharedKey sampleAccount:h0VRxbQipkWe0762ni41UQrKqV5h/j5gMlJDjb0tvys=")
   }
 
   req := s.core.PrepareRequest()
@@ -65,9 +65,9 @@ func (s *CoreSuite) Test_RequestWithCustomHeaders(c *C) {
     // HEADER
     c.Assert(r.Header.Get("some"), Equals, "header key")
     c.Assert(r.Header.Get("x-ms-blob-type"), Equals, "BlockBlob")
-    c.Assert(r.Header.Get("x-ms-date"), Equals, "Fri, 22 Nov 2013 15:00:00 GMT")
+    c.Assert(r.Header.Get("x-ms-date"), Equals, "Sat, 02 Nov 2013 15:00:00 GMT")
     c.Assert(r.Header.Get("x-ms-version"), Equals, "2009-09-19")
-    c.Assert(r.Header.Get("Authorization"), Equals, "SharedKey sampleAccount:KcrJEvtAQwa0NJbObaCqBIgXOEcXAMmxcAuMr4+C+E4=")
+    c.Assert(r.Header.Get("Authorization"), Equals, "SharedKey sampleAccount:BXo6wDPzH6TAUVgg0immVsr/1x6xlBLC3/8W71iRMmo=")
   }
 
   s.core.AzureRequest.Header = map[string]string{

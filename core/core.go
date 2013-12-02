@@ -16,7 +16,7 @@ import(
   "io"
 )
 
-const ms_date_layout = "Mon, 2 Jan 2006 15:04:05 GMT"
+const ms_date_layout = "Mon, 02 Jan 2006 15:04:05 GMT"
 const version = "2009-09-19"
 
 type Credentials struct {
