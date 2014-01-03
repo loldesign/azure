@@ -23,9 +23,9 @@ func main() {
   blob := azure.New("accountName", "secret")
   res, err := blob.CreateContainer("mycontainer")
 
-    if err != nil {
-      fmt.Println(err)
-    }
+  if err != nil {
+    fmt.Println(err)
+  }
 
   fmt.Printf("status -> %s", res.Status)
 }
@@ -60,6 +60,52 @@ func main() {
 }
 ```
 
+### Listing container's blobs
+
+```go
+package main
+
+import(
+  "fmt"
+  "github.com/loldesign/azure"
+)
+
+func main() {
+  blob := azure.New("accountName", "secret")
+  blobs, err := blob.ListBlobs("mycontainer")
+
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  for _, file := range blobs.Itens {
+    fmt.Printf("blob -> %+v", file)
+  }
+}
+```
+
+### Deleting a blob
+
+```go
+package main
+
+import(
+  "fmt"
+  "github.com/loldesign/azure"
+)
+
+func main() {
+  blob := azure.New("accountName", "secret")
+  ok, err := blob.DeleteBlob("mycontainer", "my_file.png")
+
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  fmt.Printf("deleted? -> %t", ok)
+}
+```
+
 ### Deleting a container
 
 ```go
@@ -79,30 +125,6 @@ func main() {
     }
 
   fmt.Printf("status -> %s", res.Status)
-}
-```
-
-### Listing container's blobs
-
-```go
-package main
-
-import(
-  "fmt"
-  "github.com/loldesign/azure"
-)
-
-func main() {
-  blob := azure.New("accountName", "secret")
-  blobs, err := blob.ListBlobs("mycontainer")
-
-    if err != nil {
-      fmt.Println(err)
-    }
-
-  for _, file := range blobs.Itens {
-    fmt.Printf("blob -> %+v", file)
-  }
 }
 ```
 

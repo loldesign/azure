@@ -127,3 +127,22 @@ func (a Azure) ListBlobs(container string) (Blobs, error) {
 
 	return blobs, nil
 }
+
+func (a Azure) DeleteBlob(container, name string) (bool, error) {
+	azureRequest := core.AzureRequest{
+		Method:      "delete",
+		Container:   fmt.Sprintf("%s/%s", container, name),
+		RequestTime: time.Now().UTC()}
+
+	res, err := a.doRequest(azureRequest)
+
+	if err != nil {
+		return false, err
+	}
+
+	if res.StatusCode != 202 {
+		return false, fmt.Errorf("deleteBlob: %s", res.Status)
+	}
+
+	return true, nil
+}
