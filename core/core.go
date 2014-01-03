@@ -1,88 +1,88 @@
 package core
 
-import(
-  "time"
-  "net/url"
-  "net/http"
-  "fmt"
-  "log"
-  "bytes"
-  "strings"
-  "encoding/base64"
-  "crypto/hmac"
-  "crypto/sha256"
-  "sort"
-  "strconv"
-  "io"
+import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/url"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
 )
 
 const ms_date_layout = "Mon, 02 Jan 2006 15:04:05 GMT"
 const version = "2009-09-19"
 
 type Credentials struct {
-  Account string
-  AccessKey string
+	Account   string
+	AccessKey string
 }
 
 type AzureRequest struct {
-  Method string
-  Container string
-  Resource string
-  RequestTime time.Time
-  Request *http.Request
-  Header map[string]string
-  Body io.Reader
+	Method      string
+	Container   string
+	Resource    string
+	RequestTime time.Time
+	Request     *http.Request
+	Header      map[string]string
+	Body        io.Reader
 }
 
 type Core struct {
-  Credentials Credentials
-  AzureRequest AzureRequest
+	Credentials  Credentials
+	AzureRequest AzureRequest
 }
 
 func New(credentials Credentials, azureRequest AzureRequest) *Core {
-  return &Core{
-    Credentials: credentials,
-    AzureRequest: azureRequest}
+	return &Core{
+		Credentials:  credentials,
+		AzureRequest: azureRequest}
 }
 
 func (core Core) addCustomInformationsToHeader() {
-  for key, value := range core.AzureRequest.Header {
-    core.AzureRequest.Request.Header.Add(key, value)
-  }
+	for key, value := range core.AzureRequest.Header {
+		core.AzureRequest.Request.Header.Add(key, value)
+	}
 }
 
 func (core Core) PrepareRequest() *http.Request {
-  body := &bytes.Buffer{}
+	body := &bytes.Buffer{}
 
-  if core.AzureRequest.Body != nil {
-    io.Copy(body, core.AzureRequest.Body)
-  }
+	if core.AzureRequest.Body != nil {
+		io.Copy(body, core.AzureRequest.Body)
+	}
 
-  req, err := http.NewRequest(strings.ToUpper(core.AzureRequest.Method), core.RequestUrl(), body)
+	req, err := http.NewRequest(strings.ToUpper(core.AzureRequest.Method), core.RequestUrl(), body)
 
-  if err != nil {
-    log.Fatal(err)
-  }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  core.AzureRequest.Request = req
-  core.addCustomInformationsToHeader()
-  core.complementHeaderInformations()
+	core.AzureRequest.Request = req
+	core.addCustomInformationsToHeader()
+	core.complementHeaderInformations()
 
-  return req
+	return req
 }
 
 func (core Core) RequestUrl() string {
-  return fmt.Sprintf("%s%s%s", core.webService(), core.AzureRequest.Container, core.AzureRequest.Resource)
+	return fmt.Sprintf("%s%s%s", core.webService(), core.AzureRequest.Container, core.AzureRequest.Resource)
 }
 
 func (core Core) complementHeaderInformations() {
-  core.AzureRequest.Request.Header.Add("x-ms-date", core.formattedRequestTime())
-  core.AzureRequest.Request.Header.Add("x-ms-version", version)
-  core.AzureRequest.Request.Header.Add("Authorization", core.authorizationHeader())
+	core.AzureRequest.Request.Header.Add("x-ms-date", core.formattedRequestTime())
+	core.AzureRequest.Request.Header.Add("x-ms-version", version)
+	core.AzureRequest.Request.Header.Add("Authorization", core.authorizationHeader())
 }
 
 func (core Core) authorizationHeader() string {
-  return fmt.Sprintf("SharedKey %s:%s", core.Credentials.Account, core.signature())
+	return fmt.Sprintf("SharedKey %s:%s", core.Credentials.Account, core.signature())
 }
 
 /*
@@ -97,24 +97,24 @@ Based on Azure docs:
   6) Finally, append a new line character to each canonicalized header in the resulting list. Construct the CanonicalizedHeaders string by concatenating all headers in this list into a single string.
 */
 func (core Core) canonicalizedHeaders() string {
-  var buffer bytes.Buffer
+	var buffer bytes.Buffer
 
-  for key, value := range core.AzureRequest.Request.Header {
-    lowerKey := strings.ToLower(key)
+	for key, value := range core.AzureRequest.Request.Header {
+		lowerKey := strings.ToLower(key)
 
-    if strings.HasPrefix(lowerKey, "x-ms-") {
-      if buffer.Len() == 0 {
-        buffer.WriteString(fmt.Sprintf("%s:%s", lowerKey, value[0]))
-      }else {
-        buffer.WriteString(fmt.Sprintf("\n%s:%s", lowerKey, value[0]))
-      }
-    }
-  }
+		if strings.HasPrefix(lowerKey, "x-ms-") {
+			if buffer.Len() == 0 {
+				buffer.WriteString(fmt.Sprintf("%s:%s", lowerKey, value[0]))
+			} else {
+				buffer.WriteString(fmt.Sprintf("\n%s:%s", lowerKey, value[0]))
+			}
+		}
+	}
 
-  splitted := strings.Split(buffer.String(), "\n")
-  sort.Strings(splitted)
+	splitted := strings.Split(buffer.String(), "\n")
+	sort.Strings(splitted)
 
-  return strings.Join(splitted, "\n")
+	return strings.Join(splitted, "\n")
 }
 
 /*
@@ -140,38 +140,38 @@ Rules:
   2) Avoid using commas in query parameter values.
 */
 func (core Core) canonicalizedResource() string {
-  var buffer bytes.Buffer
+	var buffer bytes.Buffer
 
-  u, err := url.Parse(core.RequestUrl())
+	u, err := url.Parse(core.RequestUrl())
 
-  if err != nil {
-    log.Fatal(err)
-  }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  buffer.WriteString(fmt.Sprintf("/%s/%s", core.Credentials.Account, core.AzureRequest.Container))
-  queries := u.Query()
+	buffer.WriteString(fmt.Sprintf("/%s/%s", core.Credentials.Account, core.AzureRequest.Container))
+	queries := u.Query()
 
-  for key, values := range queries {
-    sort.Strings(values)
-    buffer.WriteString(fmt.Sprintf("\n%s:%s", key, strings.Join(values, ",")))
-  }
+	for key, values := range queries {
+		sort.Strings(values)
+		buffer.WriteString(fmt.Sprintf("\n%s:%s", key, strings.Join(values, ",")))
+	}
 
-  splitted := strings.Split(buffer.String(), "\n")
-  sort.Strings(splitted)
+	splitted := strings.Split(buffer.String(), "\n")
+	sort.Strings(splitted)
 
-  return strings.Join(splitted, "\n")
+	return strings.Join(splitted, "\n")
 }
 
 func (core Core) contentLength() (contentLength string) {
-  if core.AzureRequest.Request.Method == "PUT" {
-    contentLength = strconv.FormatInt(core.AzureRequest.Request.ContentLength, 10)
-  }
+	if core.AzureRequest.Request.Method == "PUT" {
+		contentLength = strconv.FormatInt(core.AzureRequest.Request.ContentLength, 10)
+	}
 
-  return
+	return
 }
 
 func (core Core) formattedRequestTime() string {
-  return core.AzureRequest.RequestTime.Format(ms_date_layout)
+	return core.AzureRequest.RequestTime.Format(ms_date_layout)
 }
 
 /*
@@ -190,21 +190,21 @@ params:
  Range
 */
 func (core Core) signature() string {
-  signature := fmt.Sprintf("%s\n\n\n%s\n\n%s\n\n\n\n\n\n\n%s\n%s",
-    strings.ToUpper(core.AzureRequest.Method),
-    core.contentLength(),
-    core.AzureRequest.Request.Header.Get("Content-Type"),
-    core.canonicalizedHeaders(),
-    core.canonicalizedResource())
+	signature := fmt.Sprintf("%s\n\n\n%s\n\n%s\n\n\n\n\n\n\n%s\n%s",
+		strings.ToUpper(core.AzureRequest.Method),
+		core.contentLength(),
+		core.AzureRequest.Request.Header.Get("Content-Type"),
+		core.canonicalizedHeaders(),
+		core.canonicalizedResource())
 
-  decodedKey, _ := base64.StdEncoding.DecodeString(core.Credentials.AccessKey)
+	decodedKey, _ := base64.StdEncoding.DecodeString(core.Credentials.AccessKey)
 
-  sha256 := hmac.New(sha256.New, []byte(decodedKey))
-  sha256.Write([]byte(signature))
+	sha256 := hmac.New(sha256.New, []byte(decodedKey))
+	sha256.Write([]byte(signature))
 
-  return base64.StdEncoding.EncodeToString(sha256.Sum(nil))
+	return base64.StdEncoding.EncodeToString(sha256.Sum(nil))
 }
 
 func (core Core) webService() string {
-  return fmt.Sprintf("https://%s.blob.core.windows.net/", core.Credentials.Account)
+	return fmt.Sprintf("https://%s.blob.core.windows.net/", core.Credentials.Account)
 }
