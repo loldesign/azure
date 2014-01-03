@@ -120,9 +120,9 @@ func main() {
   blob := azure.New("accountName", "secret")
   res, err := blob.DeleteContainer("mycontainer")
 
-    if err != nil {
-      fmt.Println(err)
-    }
+  if err != nil {
+    fmt.Println(err)
+  }
 
   fmt.Printf("status -> %s", res.Status)
 }
