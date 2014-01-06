@@ -58,6 +58,8 @@ func (core Core) PrepareRequest() *http.Request {
 		io.Copy(body, core.AzureRequest.Body)
 	}
 
+	core.sanitizeContainer()
+
 	req, err := http.NewRequest(strings.ToUpper(core.AzureRequest.Method), core.RequestUrl(), body)
 
 	if err != nil {
@@ -73,6 +75,11 @@ func (core Core) PrepareRequest() *http.Request {
 
 func (core Core) RequestUrl() string {
 	return fmt.Sprintf("%s%s%s", core.webService(), core.AzureRequest.Container, core.AzureRequest.Resource)
+}
+
+// Replace any whitespace character by %20 (default of URI)
+func (core *Core) sanitizeContainer() {
+	core.AzureRequest.Container = strings.Replace(core.AzureRequest.Container, " ", "%20", -1)
 }
 
 func (core Core) complementHeaderInformations() {
