@@ -99,7 +99,8 @@ func (a Azure) FileUpload(container, name string, file *os.File) (*http.Response
 
 	azureRequest := core.AzureRequest{
 		Method:      "put",
-		Container:   fmt.Sprintf("%s/%s", container, name),
+		Container:   container,
+		Blob:        name,
 		Body:        file,
 		Header:      map[string]string{"x-ms-blob-type": "BlockBlob", "Accept-Charset": "UTF-8", "Content-Type": contentType},
 		RequestTime: time.Now().UTC()}
@@ -131,7 +132,8 @@ func (a Azure) ListBlobs(container string) (Blobs, error) {
 func (a Azure) DeleteBlob(container, name string) (bool, error) {
 	azureRequest := core.AzureRequest{
 		Method:      "delete",
-		Container:   fmt.Sprintf("%s/%s", container, name),
+		Container:   container,
+		Blob:        name,
 		RequestTime: time.Now().UTC()}
 
 	res, err := a.doRequest(azureRequest)

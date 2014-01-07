@@ -28,6 +28,7 @@ type AzureRequest struct {
 	Method      string
 	Container   string
 	Resource    string
+	Blob        string
 	RequestTime time.Time
 	Request     *http.Request
 	Header      map[string]string
@@ -58,7 +59,11 @@ func (core Core) PrepareRequest() *http.Request {
 		io.Copy(body, core.AzureRequest.Body)
 	}
 
-	core.sanitizeContainer()
+	// Escape characters in blob name
+	core.AzureRequest.Blob = url.QueryEscape(core.AzureRequest.Blob)
+
+	// Prepare container URL
+	core.AzureRequest.Container = fmt.Sprintf("%s/%s", core.AzureRequest.Container, core.AzureRequest.Blob)
 
 	req, err := http.NewRequest(strings.ToUpper(core.AzureRequest.Method), core.RequestUrl(), body)
 
@@ -75,11 +80,6 @@ func (core Core) PrepareRequest() *http.Request {
 
 func (core Core) RequestUrl() string {
 	return fmt.Sprintf("%s%s%s", core.webService(), core.AzureRequest.Container, core.AzureRequest.Resource)
-}
-
-// Replace any whitespace character by %20 (default of URI)
-func (core *Core) sanitizeContainer() {
-	core.AzureRequest.Container = strings.Replace(core.AzureRequest.Container, " ", "%20", -1)
 }
 
 func (core Core) complementHeaderInformations() {
