@@ -59,11 +59,15 @@ func (core Core) PrepareRequest() *http.Request {
 		io.Copy(body, core.AzureRequest.Body)
 	}
 
-	// Escape characters in blob name
+	// escape characters in blob name
 	core.AzureRequest.Blob = url.QueryEscape(core.AzureRequest.Blob)
+	// the Azure's behavior uses %20 to represent whitespace instead of + (plus)
+	core.AzureRequest.Blob = strings.Replace(core.AzureRequest.Blob, "+", "%20", -1)
 
-	// Prepare container URL
-	core.AzureRequest.Container = fmt.Sprintf("%s/%s", core.AzureRequest.Container, core.AzureRequest.Blob)
+	// prepare container URL
+	if core.AzureRequest.Blob != "" {
+		core.AzureRequest.Container = fmt.Sprintf("%s/%s", core.AzureRequest.Container, core.AzureRequest.Blob)
+	}
 
 	req, err := http.NewRequest(strings.ToUpper(core.AzureRequest.Method), core.RequestUrl(), body)
 
