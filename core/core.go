@@ -63,6 +63,8 @@ func (core Core) PrepareRequest() *http.Request {
 	core.AzureRequest.Blob = url.QueryEscape(core.AzureRequest.Blob)
 	// the Azure's behavior uses %20 to represent whitespace instead of + (plus)
 	core.AzureRequest.Blob = strings.Replace(core.AzureRequest.Blob, "+", "%20", -1)
+	// the Azure's behavior uses slash instead of + %2F
+	core.AzureRequest.Blob = strings.Replace(core.AzureRequest.Blob, "%2F", "/", -1)
 
 	// prepare container URL
 	if core.AzureRequest.Blob != "" {
