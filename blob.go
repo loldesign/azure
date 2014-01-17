@@ -4,9 +4,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/loldesign/azure/core"
+	"io"
 	"mime"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 	"time"
@@ -93,15 +93,15 @@ func (a Azure) DeleteContainer(container string) (*http.Response, error) {
 	return a.doRequest(azureRequest)
 }
 
-func (a Azure) FileUpload(container, name string, file *os.File) (*http.Response, error) {
-	extension := strings.ToLower(path.Ext(file.Name()))
+func (a Azure) FileUpload(container, name string, body io.Reader) (*http.Response, error) {
+	extension := strings.ToLower(path.Ext(name))
 	contentType := mime.TypeByExtension(extension)
 
 	azureRequest := core.AzureRequest{
 		Method:      "put",
 		Container:   container,
 		Blob:        name,
-		Body:        file,
+		Body:        body,
 		Header:      map[string]string{"x-ms-blob-type": "BlockBlob", "Accept-Charset": "UTF-8", "Content-Type": contentType},
 		RequestTime: time.Now().UTC()}
 
