@@ -84,6 +84,38 @@ func main() {
 }
 ```
 
+### Downloading a file from container
+
+```go
+package main
+
+import(
+  "fmt"
+  "github.com/loldesign/azure"
+)
+
+func main() {
+  blob := azure.New("accountName", "secret")
+  res, err := blob.FileDownload("mycontainer", "some/filename.png")
+
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  contents, ok := ioutil.ReadAll(res.Body)
+
+  if ok != nil {
+    fmt.Println(ok)
+  }
+
+  ok = ioutil.WriteFile("filename.png"), contents, 0644) // don't do that with large files!
+
+  if ok != nil {
+    fmt.Println("done!")
+  }
+}
+```
+
 ### Deleting a blob
 
 ```go
