@@ -148,3 +148,13 @@ func (a Azure) DeleteBlob(container, name string) (bool, error) {
 
 	return true, nil
 }
+
+func (a Azure) FileDownload(container, name string) (*http.Response, error) {
+	azureRequest := core.AzureRequest{
+		Method:      "get",
+		Container:   container,
+		Blob:        name,
+		RequestTime: time.Now().UTC()}
+
+	return a.doRequest(azureRequest)
+}
