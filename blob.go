@@ -57,17 +57,6 @@ func (a Azure) prepareRequest(azureRequest core.AzureRequest) *http.Request {
 	return core.New(credentials, azureRequest).PrepareRequest()
 }
 
-func prepareMetadata(keys map[string]string) map[string]string {
-	header := make(map[string]string)
-
-	for k, v := range keys {
-		key := fmt.Sprintf("x-ms-meta-%s", k)
-		header[key] = v
-	}
-
-	return header
-}
-
 func New(account, accessKey string) Azure {
 	return Azure{account, accessKey}
 }
@@ -77,7 +66,7 @@ func (a Azure) CreateContainer(container string, meta map[string]string) (*http.
 		Method:      "put",
 		Container:   container,
 		Resource:    "?restype=container",
-		Header:      prepareMetadata(meta),
+		Header:      meta,
 		RequestTime: time.Now().UTC()}
 
 	return a.doRequest(azureRequest)
