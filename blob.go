@@ -149,6 +149,9 @@ func (a Azure) FileDownload(container, name string) (*http.Response, error) {
 }
 
 func (a Azure) CopyBlob(container, name, source string) (*http.Response, error) {
+	// escape characters in source
+	source = core.Escape(source)
+
 	azureRequest := core.AzureRequest{
 		Method:      "put",
 		Container:   container,

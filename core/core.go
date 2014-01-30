@@ -40,6 +40,16 @@ type Core struct {
 	AzureRequest AzureRequest
 }
 
+func Escape(content string) string {
+	content = url.QueryEscape(content)
+	// the Azure's behavior uses %20 to represent whitespace instead of + (plus)
+	content = strings.Replace(content, "+", "%20", -1)
+	// the Azure's behavior uses slash instead of + %2F
+	content = strings.Replace(content, "%2F", "/", -1)
+
+	return content
+}
+
 func New(credentials Credentials, azureRequest AzureRequest) *Core {
 	return &Core{
 		Credentials:  credentials,
@@ -60,11 +70,7 @@ func (core Core) PrepareRequest() *http.Request {
 	}
 
 	// escape characters in blob name
-	core.AzureRequest.Blob = url.QueryEscape(core.AzureRequest.Blob)
-	// the Azure's behavior uses %20 to represent whitespace instead of + (plus)
-	core.AzureRequest.Blob = strings.Replace(core.AzureRequest.Blob, "+", "%20", -1)
-	// the Azure's behavior uses slash instead of + %2F
-	core.AzureRequest.Blob = strings.Replace(core.AzureRequest.Blob, "%2F", "/", -1)
+	core.AzureRequest.Blob = Escape(core.AzureRequest.Blob)
 
 	// prepare container URL
 	if core.AzureRequest.Blob != "" {
