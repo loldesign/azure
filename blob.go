@@ -148,6 +148,16 @@ func (a Azure) FileDownload(container, name string) (*http.Response, error) {
 	return a.doRequest(azureRequest)
 }
 
+func (a Azure) GetProperties(container, name string) (*http.Response, error) {
+	azureRequest := core.AzureRequest{
+		Method:      "head",
+		Container:   container,
+		Blob:        name,
+		RequestTime: time.Now().UTC()}
+
+	return a.doRequest(azureRequest)
+}
+
 func (a Azure) CopyBlob(container, name, source string) (*http.Response, error) {
 	// escape characters in source
 	source = core.Escape(source)
