@@ -118,6 +118,27 @@ func (a Azure) ListBlobs(container string) (Blobs, error) {
 	return blobs, nil
 }
 
+func (a Azure) ListBlobsPrefix(container string, prefix string) (Blobs, error) {
+	var blobs Blobs
+
+	azureRequest := core.AzureRequest{
+		Method:      "get",
+		Container:   container,
+		Resource:    "?restype=container&prefix=" + prefix + "&comp=list",
+		RequestTime: time.Now().UTC()}
+
+	res, err := a.doRequest(azureRequest)
+
+	if err != nil {
+		return blobs, err
+	}
+
+	decoder := xml.NewDecoder(res.Body)
+	decoder.Decode(&blobs)
+
+	return blobs, nil
+}
+
 func (a Azure) DeleteBlob(container, name string) (bool, error) {
 	azureRequest := core.AzureRequest{
 		Method:      "delete",
